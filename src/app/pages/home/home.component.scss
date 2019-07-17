@@ -1,0 +1,68 @@
+@import 'variables';
+
+* {
+  display: block;
+}
+
+.header{
+  margin: 5px;
+}
+
+.vis-container {
+  border: lightgrey 1px solid;
+  margin: 5px;
+  position: relative;
+
+  .tab-content {
+    width: 100%;
+    min-height: 400px;
+    display: none;
+  }
+
+  .tabs {
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+    bottom: 0;
+
+    button {
+      background-color: inherit;
+      float: right;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+      font-size: 17px;
+    }
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .header {
+    margin: 5px 40px;
+  }
+
+  .vis-container {
+    margin: 5px 40px;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  .header {
+    margin-left: calc(50% - 344px);
+  }
+
+  .vis-container {
+    width: 65%;
+    min-width: 688px;
+    margin: 5px auto;
+    height: auto;
+
+    .tab-content {
+      min-height: 400px;
+      height: 30vw;
+    }
+  }
+}

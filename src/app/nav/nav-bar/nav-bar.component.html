@@ -1,0 +1,21 @@
+<div class="main-nav">
+  <div>
+    <a href="/" class="logo">YouStats</a>
+  </div>
+
+  <nav [ngClass]="{'active-nav' : navbarHidden === true}">
+    <ul>
+      <li><a href="home" class="active">Home</a></li>
+      <li><a href="about">About</a></li>
+      <li><a href="donate">Donate</a></li>
+      <li>
+        <form action="search" method="GET">
+          <input type="text" placeholder="Search..">
+        </form>
+      </li>
+    </ul>
+  </nav>
+  <div class="menu-toggle" (click)="toggleNavbar()">
+    <fa-icon [icon]="faBars"></fa-icon>
+  </div>
+</div>

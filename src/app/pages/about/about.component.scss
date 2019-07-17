@@ -1,0 +1,164 @@
+* {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+.center {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+
+.about{
+  display: block;
+  text-align: center;
+  width: 100%;
+}
+
+.pimg1, .pimg2, .pimg3{
+position:relative;
+opacity:0.80;
+background-position:center;
+background-size:cover;
+background-repeat:no-repeat;
+background-attachment:fixed;
+}
+
+.pimg1{
+  background-image:url('../../../assets//about/Earth.jpg');
+  min-height:400px;
+  opacity:0.85;
+}
+
+.pimg2{
+  background-image:url('../../../assets//about/Data.jpg');
+  min-height:400px;
+}
+
+.pimg3{
+  background-image:url('../../../assets//about/London.jpg');
+  background-position-y: 0%;
+  min-height:400px;
+}
+
+a, a:hover, a:focus{
+  color: inherit;
+  text-decoration: none; /* no underline */
+}
+
+h2 {
+  font-size: 2rem;
+  margin-top: 0;
+  margin-bottom: .5rem;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  color: inherit;
+}
+
+.section{
+  text-align:center;
+  padding:50px 8%;
+  font-size: 1.1em;
+}
+
+.section-light{
+  background-color:#f4f4f4;
+  color:#333;
+}
+
+.section-dark{
+  background-color:#282e34;
+  color:#ddd;
+}
+
+.section p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  display: block;
+  line-height: 1.5;
+}
+
+.ptext{
+  position:absolute;
+  top:45%;
+  width:100%;
+  text-align:center;
+  color:#000;
+  font-size:1.7em;
+  letter-spacing:8px;
+  text-transform:uppercase;
+}
+
+.header{
+  position:absolute;
+  top:45%;
+  width:100%;
+  text-align:center;
+  color:#000;
+  font-size:3em;
+  letter-spacing:5px;
+  font-style: bold;
+}
+
+.header .title {
+  border: 2px solid #fff;
+  border-radius: 5px;
+  background-color:#111;
+  color:#fff;
+  padding: 10px 20px;
+}
+
+.ptext div {
+  border: 2px solid #fff;
+  border-radius: 5px;
+  background-color:#000;
+  color:#fff;
+  opacity: 1;
+  padding: 10px 20px;
+  width:fit-content;
+}
+
+.ptext div p{
+  width:fit-content;
+  margin: 0;
+}
+
+.ptext .border.trans{
+  border: 2px solid #fff;
+  border-radius: 5px;
+  background-color:#000;
+  color:#fff;
+  opacity: 1;
+  padding: 10px 20px;
+}
+
+@media(max-width:568px){
+
+  .pimg1, .pimg2, .pimg3{
+      background-attachment:scroll;
+  }
+
+  .section h2 {
+      font-size: 3em;
+  }
+
+  .section p{
+      font-size: 1.05em;
+  }
+
+  footer .section{
+      height: 5em;
+  }
+}
+
+@media(min-width:1000px)
+{
+  .section-center {
+      margin: auto;
+      max-width:1250px;
+      left:50%;
+  }
+}
