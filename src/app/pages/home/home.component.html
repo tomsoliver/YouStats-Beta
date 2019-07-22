@@ -1,8 +1,7 @@
 <div class="content">
-  <h2 class="header">{{dataSet.name}}</h2>
+  <h2 class="header">Chart</h2>
   <div class="vis-container">
-    <div class="tab-content" id="graph">
-    </div>
+    <ys-chart [dataSets]="dataSets" id="chart"></ys-chart>
     <div class="tab-content" id="source">This is the source</div>
     <div class="tabs">
       <button class="tab-link" (click)="showSources()">Sources</button>

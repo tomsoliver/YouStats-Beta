@@ -3,130 +3,140 @@ import * as d3 from 'd3';
 import { DataSet, DataElement } from '../models/dataElement';
 import { GovernmentFilterService } from './government-filter.service';
 import { Styles } from 'src/stylings/styles';
+import { Lengths, Chart } from './models';
+import { AxisService } from './axis.service';
+import { TooltipService } from './tooltip.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LineChartService {
-  constructor(governmentFilterService: GovernmentFilterService) {}
+  constructor(
+    private governmentFilterService: GovernmentFilterService,
+    private axisService: AxisService,
+    private tooltipService: TooltipService
+  ) {}
 
-  drawGraph(graphId: string, dataSet: DataSet) {
+  drawGraph(dataSets: DataSet[]) {
+    const lengths: Chart = new Chart();
+    lengths.marginTop = 30;
+    lengths.marginRight = 25;
+    lengths.marginBottom = 45;
+    lengths.marginLeft = 70;
+    lengths.yLabelWidth = 0;
+    lengths.xLabelHeight = 0;
+
     // draw component
-    this.drawGraphComponent(graphId, dataSet);
-
-    // Set up resize watcher
-    window.addEventListener('resize', this.onResizeFunction(graphId, dataSet));
+    this.drawGraphComponent(dataSets, lengths);
+    // this.governmentFilterService.addGovernmentFilter(graphId, dataSet, lengths);
   }
 
-  private drawGraphComponent(graphId: string, dataSet: DataSet) {
-    const margin = {
-      top: 30,
-      right: 25,
-      bottom: 20,
-      left: 15,
-      yAxisNameWidth: 50,
-      xAxisNameHeight: 40
-    };
-    const graphElement = document.getElementById(graphId);
-    const width = graphElement.offsetWidth;
-    const height = graphElement.offsetHeight;
+  private drawGraphComponent(dataSets: DataSet[], lengths: Lengths) {
+    const graphElement = document.getElementById('chart');
+    lengths.width = graphElement.offsetWidth;
+    lengths.height = graphElement.offsetHeight;
 
     const svg = d3
-      .select('#' + graphId)
-      .append('svg')
-      .attr('width', width)
-      .attr('height', height)
-      .attr('id', graphId + '-svg')
-      .attr('class', 'line-graph');
+      .select('#svg-chart')
+      .attr('width', lengths.width)
+      .attr('height', lengths.height);
 
     // Create the xScale
-    const xValues = dataSet.data.map(d => d.x);
+    // Get min x value
+    const xValues = dataSets.concat.apply([], dataSets.map(s => s.data.map(t => t.x))) as Date[];
     const xScale = d3
       .scaleTime()
-      .range([margin.left + margin.yAxisNameWidth, width - margin.right])
+      .range([lengths.leftMarginWithLabel, lengths.width - lengths.marginRight])
       .domain([d3.min(xValues), d3.max(xValues)]);
 
-    // Create the yScale
-    const yValues = dataSet.data.map(d => d.y);
+    // Get the nearest number value to the nearest 10, accounting for factors.
+    // i.e. 260 goes to 200 for min, and 3500 goes to 4000 for max
+    const yValues = [].concat.apply([], dataSets.map(s => s.data.map(t => t.y)));
+    const yMin = this.roundMinValue(yValues, 1);
+    const yMax = this.roundMaxValue(yValues, 1);
+
     const yScale = d3
       .scaleLinear()
-      .range([height - margin.bottom - margin.xAxisNameHeight, margin.top])
-      .domain([d3.min(yValues), d3.max(yValues)]);
+      .range([lengths.height - lengths.bottomMarginWithLabel, lengths.marginTop])
+      .domain([yMin, yMax]);
 
-    // Draw the axes
-    const yAxisGroup = svg
-      .append('g')
-      .attr('class', 'y axis')
-      .attr('transform', `translate(${margin.left + margin.yAxisNameWidth}, 0)`)
-      .call(d3.axisLeft(yScale));
+    const xAxis = svg.append('g').attr('class', 'x axis');
+    const yAxis = svg.append('g').attr('class', 'y axis');
 
-    const yAxisText = yAxisGroup.selectAll('text')
-      .attr('fill', Styles.AxisColor)
-      .attr('font-size', Styles.AxisFontSize);
-    console.log(yAxisText);
-
-    const xAxisGroup = svg
-      .append('g')
-      .attr('class', 'x axis')
-      .attr('transform', `translate(0, ${height - margin.bottom - margin.xAxisNameHeight})`)
-      .call(d3.axisBottom(xScale));
-
-    // text label for the x axis
-    svg
-      .append('text')
-      .attr('transform', 'translate(' + width / 2 + ' ,' + (height - margin.bottom) + ')')
-      .style('text-anchor', 'middle')
-      .text(dataSet.xAxisName);
-
-    // text label for the y axis
-    svg
-      .append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', margin.left)
-      .attr('x', 0 - height / 2)
-      .attr('dy', '1em')
-      .style('text-anchor', 'middle')
-      .text(dataSet.yAxisName);
+    this.axisService.drawXAxis(lengths, xAxis, xScale);
+    this.axisService.drawYAxis(lengths, yAxis, yScale, this.axisService.moneyFormat);
 
     // define the line
     const lineFunc = d3
       .line<DataElement>()
       .x(d => xScale(d.x))
       .y(d => yScale(d.y))
-      .curve(d3.curveCardinal);
+      .curve(d3.curveLinear);
 
-    // Draw the nodes
-    const nodes = svg
-      .selectAll('circle .' + graphId + '-nodes')
-      .data(dataSet.data)
-      .enter()
-      .append('svg:circle')
-      .attr('class', graphId + '-nodes')
-      .attr('cx', d => xScale(d.x))
-      .attr('cy', d => yScale(d.y))
-      .attr('r', '1px')
+    // Create the line draw space
+    const chart = svg
+      .append('g')
+      .attr('class', 'chart')
       .attr('fill', 'black');
 
-    svg
-      .append('path')
-      .attr('d', lineFunc(dataSet.data))
-      .attr('stroke', 'black')
-      .attr('stroke-width', 2)
-      .attr('fill', 'none');
+    // Draw the nodes
+    for (let i = 0; i < dataSets.length; i++) {
+      const dataSet = dataSets[i];
+
+      const nodes = chart.append('g').attr('class', 'nodes');
+      nodes
+        .selectAll('circle')
+        .data(dataSet.data)
+        .enter()
+        .append('svg:circle')
+        .attr('cx', d => Math.round(xScale(d.x)))
+        .attr('cy', d => Math.round(yScale(d.y)))
+        .attr('r', '2px')
+        .attr('fill', Styles.GraphColors[i]);
+
+      chart
+        .append('path')
+        .attr('d', lineFunc(dataSet.data))
+        .attr('stroke', Styles.GraphColors[i])
+        .attr('stroke-width', 1.5)
+        .attr('fill', 'none');
+    }
+
+    this.tooltipService.generateTooltip(svg, xScale, lengths, dataSets);
   }
 
-  public onResizeFunction(graphId: string, dataSet: DataSet): () => void {
-    // Add on load function
-    let graphResizeTimer;
-    const drawGraphFunc = this.drawGraphComponent;
+  roundMinValue(data: number[] | Date[], roundDigits: number): number | Date {
+    let yMin: number;
+    if (data[0] instanceof Date) {
+      yMin = new Date(Math.min.apply(null, data)).getUTCFullYear();
+      console.log(yMin);
+    } else {
+      yMin = Math.min.apply(null, data);
+    }
 
-    return () => {
-      clearTimeout(graphResizeTimer);
-      graphResizeTimer = setTimeout(() => {
-        let s = d3.select('#' + graphId).select('svg');
-        s = s.remove();
-        drawGraphFunc(graphId, dataSet);
-      }, 20);
-    };
+    const yMinNumberLength = Math.pow(10, yMin.toString().length - roundDigits);
+
+    if (data[0] instanceof Date) {
+      return new Date(Math.ceil(yMin / yMinNumberLength) * yMinNumberLength, 0, 1);
+    } else {
+      return Math.floor(yMin / yMinNumberLength) * yMinNumberLength;
+    }
+  }
+
+  roundMaxValue(data: number[] | Date[], roundDigits: number): number | Date {
+    let yMax: number;
+    if (data[0] instanceof Date) {
+      yMax = new Date(Math.max.apply(null, data)).getUTCFullYear();
+    } else {
+      yMax = Math.max.apply(null, data);
+    }
+
+    const yMaxNumberLength = Math.pow(10, yMax.toString().length - roundDigits);
+
+    if (data[0] instanceof Date) {
+      return new Date(Math.ceil(yMax / yMaxNumberLength) * yMaxNumberLength, 0, 1);
+    } else {
+      return Math.ceil(yMax / yMaxNumberLength) * yMaxNumberLength;
+    }
   }
 }

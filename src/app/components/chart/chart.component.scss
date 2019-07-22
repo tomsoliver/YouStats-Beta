@@ -1,0 +1,47 @@
+@import 'variables';
+
+#svg-chart {
+  width: 100%;
+  min-height: 400px;
+}
+
+#tooltip {
+  position: absolute;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  text-align: left;
+  box-shadow: 1px 2px 2px #ddd;
+
+  .tooltip-text {
+    font-size: 12px;
+    margin: 2px 0;
+  }
+
+  .tooltip-circle {
+    float: left;
+    width: 8px;
+    height: 8px;
+    margin: 4px 4px 0 0;
+    border-radius: 4px;
+    z-index: 1;
+  }
+
+  #tooltip-data-name {
+    float: left;
+  }
+
+  #tooltip-data-data {
+    float: right;
+    text-align: right;
+    margin-left: 10px;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  #svg-chart {
+    min-height: 400px;
+    height: 30vw;
+  }
+}

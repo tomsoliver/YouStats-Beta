@@ -13,7 +13,7 @@
   margin: 5px;
   position: relative;
 
-  .tab-content {
+  #chart {
     width: 100%;
     min-height: 400px;
     display: none;
@@ -60,9 +60,17 @@
     margin: 5px auto;
     height: auto;
 
-    .tab-content {
+    #chart {
       min-height: 400px;
       height: 30vw;
     }
   }
+}
+
+svg {
+  display: none;
+}
+
+path {
+  stroke: #fff;
 }
