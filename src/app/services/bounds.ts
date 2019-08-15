@@ -1,20 +1,5 @@
-export interface Lengths {
-  marginTop?: number;
-  marginRight?: number;
-  marginBottom?: number;
-  marginLeft?: number;
-  xLabelHeight?: number;
-  yLabelWidth?: number;
-  width?: number;
-  height?: number;
-  leftMarginWithLabel?: number;
-  bottomMarginWithLabel?: number;
-  graphHeight?: number;
-  graphWidth?: number;
-}
-
 // Defines all dimensions of a chart
-export class Chart implements Lengths {
+export class Bounds {
   private _marginTop?: number = 0;
   private _marginRight?: number = 0;
   private _marginBottom?: number = 0;
@@ -23,6 +8,7 @@ export class Chart implements Lengths {
   private _yLabelWidth?: number = 0;
   private _width?: number = 0;
   private _height?: number = 0;
+  private _keyWidth?: number = 0;
 
   constructor() {}
 
@@ -102,6 +88,15 @@ export class Chart implements Lengths {
     this.setGraphHeight();
   }
 
+  // Get and set bottom margin
+  get legendWidth(): number {
+    return this._keyWidth;
+  }
+  set legendWidth(value: number) {
+    this._keyWidth = value;
+    this.setGraphWidth();
+  }
+
   public leftMarginWithLabel: number = 0;
   public bottomMarginWithLabel: number = 0;
   public graphHeight: number = 0;
@@ -120,6 +115,6 @@ export class Chart implements Lengths {
   }
 
   private setGraphWidth(): void {
-    this.graphWidth = this._width - this._marginLeft - this._yLabelWidth - this._marginRight;
+    this.graphWidth = this._width - this._marginLeft - this._yLabelWidth - this._marginRight - this.legendWidth;
   }
 }

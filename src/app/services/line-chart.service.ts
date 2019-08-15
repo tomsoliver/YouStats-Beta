@@ -3,9 +3,10 @@ import * as d3 from 'd3';
 import { DataSet, DataElement } from '../models/dataElement';
 import { GovernmentFilterService } from './government-filter.service';
 import { Styles } from 'src/stylings/styles';
-import { Lengths, Chart } from './models';
+import { Bounds } from './bounds';
 import { AxisService } from './axis.service';
 import { TooltipService } from './tooltip.service';
+import { LegendService } from './legend.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,40 +15,33 @@ export class LineChartService {
   constructor(
     private governmentFilterService: GovernmentFilterService,
     private axisService: AxisService,
-    private tooltipService: TooltipService
+    private tooltipService: TooltipService,
+    private legendService: LegendService
   ) {}
 
   drawGraph(dataSets: DataSet[]) {
-    const lengths: Chart = new Chart();
+    const lengths: Bounds = new Bounds();
     lengths.marginTop = 30;
-    lengths.marginRight = 25;
+    lengths.marginRight = 15;
     lengths.marginBottom = 45;
-    lengths.marginLeft = 70;
+    lengths.marginLeft = 65;
     lengths.yLabelWidth = 0;
     lengths.xLabelHeight = 0;
 
     // draw component
     this.drawGraphComponent(dataSets, lengths);
-    // this.governmentFilterService.addGovernmentFilter(graphId, dataSet, lengths);
+    // this.governmentFilterService.addGovernmentFilter('chart', dataSets[0], lengths);
   }
 
-  private drawGraphComponent(dataSets: DataSet[], lengths: Lengths) {
+  private drawGraphComponent(dataSets: DataSet[], bounds: Bounds) {
     const graphElement = document.getElementById('chart');
-    lengths.width = graphElement.offsetWidth;
-    lengths.height = graphElement.offsetHeight;
+    bounds.width = graphElement.offsetWidth;
+    bounds.height = graphElement.offsetHeight;
 
     const svg = d3
       .select('#svg-chart')
-      .attr('width', lengths.width)
-      .attr('height', lengths.height);
-
-    // Create the xScale
-    // Get min x value
-    const xValues = dataSets.concat.apply([], dataSets.map(s => s.data.map(t => t.x))) as Date[];
-    const xScale = d3
-      .scaleTime()
-      .range([lengths.leftMarginWithLabel, lengths.width - lengths.marginRight])
-      .domain([d3.min(xValues), d3.max(xValues)]);
+      .attr('width', bounds.width)
+      .attr('height', bounds.height);
 
     // Get the nearest number value to the nearest 10, accounting for factors.
     // i.e. 260 goes to 200 for min, and 3500 goes to 4000 for max
@@ -57,14 +51,27 @@ export class LineChartService {
 
     const yScale = d3
       .scaleLinear()
-      .range([lengths.height - lengths.bottomMarginWithLabel, lengths.marginTop])
+      .range([bounds.height - bounds.bottomMarginWithLabel, bounds.marginTop])
       .domain([yMin, yMax]);
+
+    // draw legend if required
+    if (dataSets.length > 1) {
+      this.legendService.drawLegend(svg, bounds, dataSets, yScale);
+    }
+
+    // Create the xScale after the legend is calculated
+    // Get min x value
+    const xValues = dataSets.concat.apply([], dataSets.map(s => s.data.map(t => t.x))) as Date[];
+    const xScale = d3
+      .scaleTime()
+      .range([bounds.leftMarginWithLabel, bounds.width - bounds.marginRight - bounds.legendWidth])
+      .domain([d3.min(xValues), d3.max(xValues)]);
 
     const xAxis = svg.append('g').attr('class', 'x axis');
     const yAxis = svg.append('g').attr('class', 'y axis');
 
-    this.axisService.drawXAxis(lengths, xAxis, xScale);
-    this.axisService.drawYAxis(lengths, yAxis, yScale, this.axisService.moneyFormat);
+    this.axisService.drawXAxis(bounds, xAxis, xScale);
+    this.axisService.drawYAxis(bounds, yAxis, yScale, this.axisService.moneyFormat);
 
     // define the line
     const lineFunc = d3
@@ -74,10 +81,7 @@ export class LineChartService {
       .curve(d3.curveLinear);
 
     // Create the line draw space
-    const chart = svg
-      .append('g')
-      .attr('class', 'chart')
-      .attr('fill', 'black');
+    const chart = svg.append('g').attr('class', 'chart');
 
     // Draw the nodes
     for (let i = 0; i < dataSets.length; i++) {
@@ -102,9 +106,10 @@ export class LineChartService {
         .attr('fill', 'none');
     }
 
-    this.tooltipService.generateTooltip(svg, xScale, lengths, dataSets);
+    this.tooltipService.generateTooltip(svg, xScale, bounds, dataSets);
   }
 
+  // Round the data to the nearest 10^n, where n is the number of digits
   roundMinValue(data: number[] | Date[], roundDigits: number): number | Date {
     let yMin: number;
     if (data[0] instanceof Date) {
@@ -123,6 +128,7 @@ export class LineChartService {
     }
   }
 
+  // Round the data to the nearest 10^n, where n is the number of digits
   roundMaxValue(data: number[] | Date[], roundDigits: number): number | Date {
     let yMax: number;
     if (data[0] instanceof Date) {

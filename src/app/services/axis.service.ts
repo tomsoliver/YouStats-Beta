@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {  Lengths } from './models';
+import { Bounds } from './bounds';
 import * as d3 from 'd3';
 import { Styles } from 'src/stylings/styles';
 import { ScaleContinuousNumeric } from 'd3';
@@ -17,21 +17,21 @@ export class AxisService {
   }
 
   public drawYAxis(
-    lengths: Lengths,
+    bounds: Bounds,
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     scale: d3.ScaleLinear<number, number> | d3.AxisScale<d3.AxisDomain>,
     format: { (n: number | { valueOf(): number; }): string; (domainValue: d3.AxisDomain, index: number): string; }
   ): void {
     const axis = d3
       .axisLeft(scale)
-      .tickSize(-lengths.graphWidth)
+      .tickSize(-bounds.graphWidth)
       .tickPadding(12)
       .tickFormat(format)
-      .ticks(lengths.graphHeight / this.pixelsPerYTick);
+      .ticks(bounds.graphHeight / this.pixelsPerYTick);
 
     const yAxisGroup = svg
       .append('g')
-      .attr('transform', `translate(${lengths.leftMarginWithLabel}, 0)`)
+      .attr('transform', `translate(${bounds.leftMarginWithLabel}, 0)`)
       .call(axis);
 
     const yAxisText = yAxisGroup
@@ -47,7 +47,7 @@ export class AxisService {
   }
 
   public drawXAxis(
-    lengths: Lengths,
+    bounds: Bounds,
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     scale: d3.ScaleTime<number, number> | d3.AxisScale<d3.AxisDomain>
   ): void {
@@ -55,12 +55,12 @@ export class AxisService {
       .axisBottom(scale)
       .tickSize(0)
       .tickPadding(12)
-      .ticks(lengths.graphWidth / this.pixelsPerXTick);
+      .ticks(bounds.graphWidth / this.pixelsPerXTick);
 
     // Draw the axes
     const xAxisGroup = svg
       .append('g')
-      .attr('transform', `translate(0, ${lengths.height - lengths.bottomMarginWithLabel})`)
+      .attr('transform', `translate(0, ${bounds.height - bounds.bottomMarginWithLabel})`)
       .call(axis);
 
     const xAxisText = xAxisGroup

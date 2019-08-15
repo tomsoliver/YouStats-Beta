@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { DataSet } from '../models/dataElement';
 import { TestGovernements } from '../models/TestData';
 import { GovernmentTerm } from '../models/governmentTerm';
-import { Lengths } from './models';
+import { Bounds } from './bounds';
 
 @Injectable({
   providedIn: 'root'
@@ -13,15 +13,15 @@ export class GovernmentFilterService {
 
   constructor() {}
 
-  public addGovernmentFilter(graphId: string, dataSet: DataSet, lengths: Lengths) {
+  public addGovernmentFilter(graphId: string, dataSet: DataSet, bounds: Bounds) {
     // Draw filters
-    this.drawFilters(graphId, dataSet, lengths);
+    this.drawFilters(graphId, dataSet, bounds);
 
     // Set up resize
-    window.addEventListener('resize', this.onResizeFunction(graphId, dataSet, lengths));
+    // window.addEventListener('resize', this.onResizeFunction(graphId, dataSet, lengths));
   }
 
-  public onResizeFunction(graphId: string, dataSet: DataSet, lengths: Lengths): () => void {
+  public onResizeFunction(graphId: string, dataSet: DataSet, bounds: Bounds): () => void {
     // Add on load function
     let overlayResizeTimer;
     const drawFiltersFunc = this.drawFilters;
@@ -31,17 +31,18 @@ export class GovernmentFilterService {
       overlayResizeTimer = setTimeout(() => {
         let s = d3.selectAll('.' + graphId + '-overlays');
         s = s.remove();
-        drawFiltersFunc(graphId, dataSet, lengths);
+        drawFiltersFunc(graphId, dataSet, bounds);
       }, 20);
     };
   }
 
-  private drawFilters(graphId: string, dataSet: DataSet, lengths: Lengths) {
+  private drawFilters(graphId: string, dataSet: DataSet, bounds: Bounds) {
     const graphElement = document.getElementById(graphId);
     const width = graphElement.offsetWidth;
     const height = graphElement.offsetHeight;
 
-    const svg = d3.select('#' + graphId + '-svg');
+    const svg = d3
+    .select('#svg-chart').append('g').attr('class', 'governments');
 
     // Get valid government terms
     let governments = TestGovernements;
@@ -71,7 +72,7 @@ export class GovernmentFilterService {
     // Get scale
     const xScale = d3
       .scaleTime()
-      .range([lengths.marginLeft + lengths.yLabelWidth, width - lengths.marginRight])
+      .range([bounds.marginLeft + bounds.yLabelWidth, width - bounds.marginRight])
       .domain([d3.min(governments.map(d => d.startDate)), d3.max(governments.map(d => d.endDate))]);
 
     const rects = svg
@@ -81,9 +82,9 @@ export class GovernmentFilterService {
       .append('rect')
       .attr('class', graphId + '-overlays')
       .attr('x', d => xScale(d.startDate))
-      .attr('y', lengths.marginTop)
+      .attr('y', bounds.marginTop)
       .attr('width', d => xScale(d.endDate) - xScale(d.startDate))
-      .attr('height', d => height - lengths.marginBottom - lengths.xLabelHeight - lengths.marginTop)
+      .attr('height', d => height - bounds.marginBottom - bounds.xLabelHeight - bounds.marginTop)
       .attr('fill', d => d.color)
       .style('stroke', d => d.color)
       .style('stroke-width', '1')
