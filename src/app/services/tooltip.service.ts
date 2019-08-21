@@ -23,10 +23,11 @@ export class TooltipService {
     let tipBox;
     tipBox = svg
       .append('rect')
-      .attr('width', bounds.graphWidth)
-      .attr('height', bounds.graphHeight)
+      .attr('width', bounds.width)
+      .attr('height', bounds.height)
+      .attr('x', bounds.left)
+      .attr('y', bounds.top)
       .attr('opacity', 0)
-      .attr('transform', 'translate(' + bounds.leftMarginWithLabel + ',' + bounds.marginTop + ')')
       .style('z-index', '2')
       .on('mousemove', () =>
         this.drawToolTip(xScale, tipBox, dataSets, tooltip, tooltipLine, bounds)
@@ -57,7 +58,7 @@ export class TooltipService {
     bounds: Bounds
   ): void {
     // Get year from coordinates
-    const coordinate = d3.mouse(tipBox.node())[0] + bounds.leftMarginWithLabel;
+    const coordinate = d3.mouse(tipBox.node())[0];
     const date = xScale.invert(coordinate);
     const year = new Date(0);
     if (date.getMonth() < 6) {
@@ -77,8 +78,8 @@ export class TooltipService {
       .attr('stroke', '#ccc')
       .attr('x1', xScale(year))
       .attr('x2', xScale(year))
-      .attr('y1', bounds.marginTop)
-      .attr('y2', bounds.graphHeight + bounds.marginTop);
+      .attr('y1', bounds.top)
+      .attr('y2', bounds.bottom);
 
     // Get graph width, if over half way, then tooltip will flip to other side
     tooltip
@@ -87,7 +88,7 @@ export class TooltipService {
         // See if width + position is wider than chart width
         const position = xScale(year);
         const tooltipWidth = parseInt(tooltip.style('width').slice(0, -2), 10);
-        if (position + tooltipWidth + 20 > bounds.graphWidth + bounds.leftMarginWithLabel) {
+        if (position + tooltipWidth + 20 > bounds.width) {
           return position - tooltipWidth - 10 + 'px';
         }
         return position + 10 + 'px';

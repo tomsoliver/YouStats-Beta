@@ -12,6 +12,8 @@
   border: lightgrey 1px solid;
   margin: 5px;
   position: relative;
+  min-width: 320px;
+  max-height: 600px;
 
   #chart {
     width: 100%;

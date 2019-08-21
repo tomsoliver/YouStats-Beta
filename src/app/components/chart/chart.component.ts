@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Input, ViewEncapsulation, HostListener } from '@angular/core';
 import { LineChartService } from 'src/app/services/line-chart.service';
 import { DataSet } from 'src/app/models/dataElement';
 
@@ -16,5 +16,11 @@ export class ChartComponent implements OnInit {
 
   ngOnInit() {
     this.chartService.drawGraph(this.dataSets);
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    // setTimeout(() => this.chartService.onResize(this.dataSets), 20);
+    this.chartService.onResize(this.dataSets)
   }
 }

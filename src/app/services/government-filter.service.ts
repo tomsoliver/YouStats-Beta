@@ -72,7 +72,7 @@ export class GovernmentFilterService {
     // Get scale
     const xScale = d3
       .scaleTime()
-      .range([bounds.marginLeft + bounds.yLabelWidth, width - bounds.marginRight])
+      .range([bounds.left, width - bounds.right])
       .domain([d3.min(governments.map(d => d.startDate)), d3.max(governments.map(d => d.endDate))]);
 
     const rects = svg
@@ -82,9 +82,9 @@ export class GovernmentFilterService {
       .append('rect')
       .attr('class', graphId + '-overlays')
       .attr('x', d => xScale(d.startDate))
-      .attr('y', bounds.marginTop)
+      .attr('y', bounds.top)
       .attr('width', d => xScale(d.endDate) - xScale(d.startDate))
-      .attr('height', d => height - bounds.marginBottom - bounds.xLabelHeight - bounds.marginTop)
+      .attr('height', d => height - bounds.bottom - bounds.top)
       .attr('fill', d => d.color)
       .style('stroke', d => d.color)
       .style('stroke-width', '1')

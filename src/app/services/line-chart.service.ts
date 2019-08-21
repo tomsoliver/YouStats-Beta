@@ -12,36 +12,38 @@ import { LegendService } from './legend.service';
   providedIn: 'root'
 })
 export class LineChartService {
+
   constructor(
     private governmentFilterService: GovernmentFilterService,
     private axisService: AxisService,
     private tooltipService: TooltipService,
-    private legendService: LegendService
+    private legendService: LegendService,
   ) {}
 
   drawGraph(dataSets: DataSet[]) {
-    const lengths: Bounds = new Bounds();
-    lengths.marginTop = 30;
-    lengths.marginRight = 15;
-    lengths.marginBottom = 45;
-    lengths.marginLeft = 65;
-    lengths.yLabelWidth = 0;
-    lengths.xLabelHeight = 0;
-
-    // draw component
-    this.drawGraphComponent(dataSets, lengths);
-    // this.governmentFilterService.addGovernmentFilter('chart', dataSets[0], lengths);
+    this.drawGraphComponent(dataSets);
+    // this.governmentFilterService.addGovernmentFilter('chart', dataSets[0], this.bounds);
   }
 
-  private drawGraphComponent(dataSets: DataSet[], bounds: Bounds) {
+  onResize(dataSets: DataSet[]) {
+    const svg = d3.selectAll('#svg-chart > *').remove();
+    this.drawGraphComponent(dataSets);
+  }
+
+  private drawGraphComponent(dataSets: DataSet[]) {
     const graphElement = document.getElementById('chart');
-    bounds.width = graphElement.offsetWidth;
-    bounds.height = graphElement.offsetHeight;
+    const boundingRect = graphElement.getBoundingClientRect();
+    const svgBounds = new Bounds(0, 0, boundingRect.width, boundingRect.height);
+
+    let bounds = svgBounds.padTop(25);
+    bounds = bounds.padBottom(35);
+    bounds = bounds.padLeft(65);
+    bounds = bounds.padRight(10);
 
     const svg = d3
       .select('#svg-chart')
-      .attr('width', bounds.width)
-      .attr('height', bounds.height);
+      .attr('width', boundingRect.width)
+      .attr('height', boundingRect.height);
 
     // Get the nearest number value to the nearest 10, accounting for factors.
     // i.e. 260 goes to 200 for min, and 3500 goes to 4000 for max
@@ -51,12 +53,14 @@ export class LineChartService {
 
     const yScale = d3
       .scaleLinear()
-      .range([bounds.height - bounds.bottomMarginWithLabel, bounds.marginTop])
+      .range(bounds.yRange())
       .domain([yMin, yMax]);
 
     // draw legend if required
     if (dataSets.length > 1) {
-      this.legendService.drawLegend(svg, bounds, dataSets, yScale);
+      const legendBounds = this.legendService.drawLegend(svg, svgBounds, dataSets, yScale);
+      console.log(legendBounds)
+      bounds = bounds.padRight(legendBounds.width);
     }
 
     // Create the xScale after the legend is calculated
@@ -64,7 +68,7 @@ export class LineChartService {
     const xValues = dataSets.concat.apply([], dataSets.map(s => s.data.map(t => t.x))) as Date[];
     const xScale = d3
       .scaleTime()
-      .range([bounds.leftMarginWithLabel, bounds.width - bounds.marginRight - bounds.legendWidth])
+      .range(bounds.xRange())
       .domain([d3.min(xValues), d3.max(xValues)]);
 
     const xAxis = svg.append('g').attr('class', 'x axis');
@@ -144,5 +148,11 @@ export class LineChartService {
     } else {
       return Math.ceil(yMax / yMaxNumberLength) * yMaxNumberLength;
     }
+  }
+
+  // Applies default margins to the rectangle
+  getDefaultBounds(targetElement: HTMLElement): Bounds {
+
+    return bounds;
   }
 }

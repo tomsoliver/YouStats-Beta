@@ -24,14 +24,14 @@ export class AxisService {
   ): void {
     const axis = d3
       .axisLeft(scale)
-      .tickSize(-bounds.graphWidth)
+      .tickSize(-bounds.width)
       .tickPadding(12)
       .tickFormat(format)
-      .ticks(bounds.graphHeight / this.pixelsPerYTick);
+      .ticks(bounds.height / this.pixelsPerYTick);
 
     const yAxisGroup = svg
       .append('g')
-      .attr('transform', `translate(${bounds.leftMarginWithLabel}, 0)`)
+      .attr('transform', `translate(${bounds.left}, 0)`)
       .call(axis);
 
     const yAxisText = yAxisGroup
@@ -55,12 +55,12 @@ export class AxisService {
       .axisBottom(scale)
       .tickSize(0)
       .tickPadding(12)
-      .ticks(bounds.graphWidth / this.pixelsPerXTick);
+      .ticks(bounds.width / this.pixelsPerXTick);
 
     // Draw the axes
     const xAxisGroup = svg
       .append('g')
-      .attr('transform', `translate(0, ${bounds.height - bounds.bottomMarginWithLabel})`)
+      .attr('transform', `translate(0, ${bounds.bottom})`)
       .call(axis);
 
     const xAxisText = xAxisGroup

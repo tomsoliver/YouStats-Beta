@@ -9,12 +9,13 @@ import { Styles } from 'src/stylings/styles';
 })
 export class LegendService {
   // Draws the legend, will automatically push down if overlap is detected
+  // Returns the bounds of the legend
   drawLegend(
     svg: d3.Selection<d3.BaseType, unknown, HTMLElement, any>,
     bounds: Bounds,
     dataSets: DataSet[],
     yScale: d3.ScaleLinear<number, number>
-  ) {
+  ): Bounds {
     // Set up the legend
     const legend = svg.append('g').attr('class', 'legend');
 
@@ -38,8 +39,8 @@ export class LegendService {
 
       legendIndicator
         .append('line')
-        .attr('x1', bounds.width)
-        .attr('x2', bounds.width + 10)
+        .attr('x1', bounds.right)
+        .attr('x2', bounds.right + 10)
         .attr('y1', legendExpectedTopBound)
         .attr('y2', legendExpectedTopBound)
         .attr('stroke', Styles.GraphColors[i])
@@ -47,38 +48,44 @@ export class LegendService {
 
       if (legendTopBound !== legendExpectedTopBound) {
         legendIndicator
-        .append('line')
-        .attr('x1', bounds.width + 10)
-        .attr('x2', bounds.width + 10)
-        .attr('y1', legendExpectedTopBound)
-        .attr('y2', legendTopBound)
-        .attr('stroke', Styles.GraphColors[i])
-        .attr('stroke-width', 0.5);
+          .append('line')
+          .attr('x1', bounds.right + 10)
+          .attr('x2', bounds.right + 10)
+          .attr('y1', legendExpectedTopBound)
+          .attr('y2', legendTopBound)
+          .attr('stroke', Styles.GraphColors[i])
+          .attr('stroke-width', 0.5);
       }
 
       legendIndicator
         .append('line')
-        .attr('x1', bounds.width + 10)
-        .attr('x2', bounds.width + 20)
+        .attr('x1', bounds.right + 10)
+        .attr('x2', bounds.right + 20)
         .attr('y1', legendTopBound)
         .attr('y2', legendTopBound)
         .attr('stroke', Styles.GraphColors[i])
         .attr('stroke-width', 0.5);
 
-      legendEntry
+      const legendEntryText = legendEntry
         .append('text')
-        .text(orderedData[i].name)
         .attr('y', legendTopBound + 4)
-        .attr('x', bounds.width + 30)
+        .attr('x', bounds.right + 25)
         .attr('font-size', 12)
         .attr('fill', Styles.GraphColors[i]);
+
+      legendEntryText
+        .append('tspan')
+        .text(orderedData[i].name)
+        .attr('y', legendTopBound + 4)
+        .attr('x', bounds.right + 25);
 
       // set the previous entry bottom bound as bound for next top
       previousEntryBottomBound = legendTopBound + 12;
     }
 
-    // Set legend width
-    bounds.legendWidth = legend.node().getBBox().width;
-    legend.attr('transform', 'translate(-' + (bounds.legendWidth + bounds.marginRight / 2) + ')');
+    // Get legend bounds
+    const legendBounds = Bounds.fromBBox(legend.node().getBBox());
+    legend.attr('transform', 'translate(-' + (legendBounds.width + 5) + ')');
+    return legendBounds;
   }
 }
