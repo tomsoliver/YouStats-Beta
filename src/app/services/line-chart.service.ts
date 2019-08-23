@@ -12,12 +12,11 @@ import { LegendService } from './legend.service';
   providedIn: 'root'
 })
 export class LineChartService {
-
   constructor(
     private governmentFilterService: GovernmentFilterService,
     private axisService: AxisService,
     private tooltipService: TooltipService,
-    private legendService: LegendService,
+    private legendService: LegendService
   ) {}
 
   drawGraph(dataSets: DataSet[]) {
@@ -33,17 +32,19 @@ export class LineChartService {
   private drawGraphComponent(dataSets: DataSet[]) {
     const graphElement = document.getElementById('chart');
     const boundingRect = graphElement.getBoundingClientRect();
+
+    // Get bounds manually, not using the static method as we want a 0,0 x and y
     const svgBounds = new Bounds(0, 0, boundingRect.width, boundingRect.height);
+
+    const svg = d3
+      .select('#svg-chart')
+      .attr('width', svgBounds.width)
+      .attr('height', svgBounds.height);
 
     let bounds = svgBounds.padTop(25);
     bounds = bounds.padBottom(35);
     bounds = bounds.padLeft(65);
     bounds = bounds.padRight(10);
-
-    const svg = d3
-      .select('#svg-chart')
-      .attr('width', boundingRect.width)
-      .attr('height', boundingRect.height);
 
     // Get the nearest number value to the nearest 10, accounting for factors.
     // i.e. 260 goes to 200 for min, and 3500 goes to 4000 for max
@@ -51,16 +52,30 @@ export class LineChartService {
     const yMin = this.roundMinValue(yValues, 1);
     const yMax = this.roundMaxValue(yValues, 1);
 
-    const yScale = d3
-      .scaleLinear()
-      .range(bounds.yRange())
-      .domain([yMin, yMax]);
+    // Scale based on width of veiwport
+    let yScale: d3.ScaleLinear<number, number> | d3.AxisScale<d3.AxisDomain>;
+    if (svgBounds.width >= 500) {
+      yScale = d3
+        .scaleLinear()
+        .range(bounds.yRange())
+        .domain([yMin, yMax]);
 
-    // draw legend if required
-    if (dataSets.length > 1) {
-      const legendBounds = this.legendService.drawLegend(svg, svgBounds, dataSets, yScale);
-      console.log(legendBounds)
-      bounds = bounds.padRight(legendBounds.width);
+      // draw legend if required
+      if (dataSets.length > 1) {
+        const legendBounds = this.legendService.drawLegend(svg, svgBounds, dataSets, yScale);
+        bounds = bounds.padRight(legendBounds.x);
+      }
+    } else {
+      // draw legend if required
+      if (dataSets.length > 1) {
+        const legendBounds = this.legendService.drawBottomLegend(svg, bounds, dataSets);
+        bounds = bounds.padBottom(legendBounds.y);
+      }
+
+      yScale = d3
+        .scaleLinear()
+        .range(bounds.yRange())
+        .domain([yMin, yMax]);
     }
 
     // Create the xScale after the legend is calculated
@@ -148,11 +163,5 @@ export class LineChartService {
     } else {
       return Math.ceil(yMax / yMaxNumberLength) * yMaxNumberLength;
     }
-  }
-
-  // Applies default margins to the rectangle
-  getDefaultBounds(targetElement: HTMLElement): Bounds {
-
-    return bounds;
   }
 }

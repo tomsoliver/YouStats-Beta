@@ -2,11 +2,7 @@
 
 #svg-chart {
   width: 100%;
-  min-height: 400px;
-}
-
-.legend-entry {
-  width: auto;
+  height: 100%;
 }
 
 #tooltip {
@@ -40,12 +36,5 @@
     float: right;
     text-align: right;
     margin-left: 10px;
-  }
-}
-
-@media only screen and (min-width: 768px) {
-  #svg-chart {
-    min-height: 400px;
-    height: 30vw;
   }
 }
